@@ -6,7 +6,7 @@ const RESULT_UPDATE_URL = process.env.RESULT_UPDATE_URL || 'http://localhost:501
 function computeResult(data) {
     const { title, description, location, date, organiser } = data;
 
-    // Rule 1: All fields must be present
+    // Rule 1: All fields must be present (this works with empty strings too)
     if (!title || !description || !location || !date || !organiser) {
         return {
             status: 'INCOMPLETE',
@@ -16,7 +16,7 @@ function computeResult(data) {
         };
     }
 
-    // Rule 2: Date must be YYYY-MM-DD
+    // Rule 2: Date must be YYYY-MM-DD and a real date
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(date)) {
         return {
@@ -24,6 +24,24 @@ function computeResult(data) {
             category: 'GENERAL',
             priority: 'NORMAL',
             note: 'Date format is invalid. Please use YYYY-MM-DD.'
+        };
+    }
+
+    //check if is a real date
+    const [year, month, day] = date.split('-').map(Number);
+    const realDate = new Date(year, month - 1, day);
+    const isValidDate =
+        realDate.getFullYear() === year &&
+        realDate.getMonth() === month - 1 &&
+        realDate.getDate() === day &&
+        year >= 1900 && year <= 2100;
+
+    if (!isValidDate) {
+        return {
+            status: 'NEEDS REVISION',
+            category: 'GENERAL',
+            priority: 'NORMAL',
+            note: 'Date is invalid. Please enter a real date (e.g., 2025-12-25).'
         };
     }
 
