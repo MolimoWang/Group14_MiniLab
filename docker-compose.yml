@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+
+  # ── Container 1: Presentation Service ──────────────────────────────
+  presentation-service:
+    build: ./presentation-service
+    ports:
+      - "8080:8080"
+    environment:
+      - VUE_APP_WORKFLOW_URL=http://localhost:5001
+      - VUE_APP_DATA_URL=http://localhost:5002
+    depends_on:
+      - workflow-service
+      - data-service
+
+  # ── Container 2: Workflow Service ───────────────────────────────────
+  workflow-service:
+    build: ./workflow-service
+    ports:
+      - "5001:5001"
+    environment:
+      - DATA_SERVICE_URL=http://data-service:5002
+      - SUBMISSION_EVENT_URL=http://submission-event-fn:5010
+    depends_on:
+      - data-service
+      - submission-event-fn
+
+  # ── Container 3: Data Service ───────────────────────────────────────
+  data-service:
+    build: ./data-service
+    ports:
+      - "5002:5002"
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/campusbuzz
+    depends_on:
+      - mongodb
+
+  # ── Serverless Function 1: Submission Event ─────────────────────────
+  submission-event-fn:
+    build: ./functions/submission-event
+    ports:
+      - "5010:5010"
+    environment:
+      - PROCESSING_URL=http://processing-fn:5011
+
+  # ── Serverless Function 2: Processing ──────────────────────────────
+  processing-fn:
+    build: ./functions/processing
+    ports:
+      - "5011:5011"
+    environment:
+      - RESULT_UPDATE_URL=http://result-update-fn:5012
+
+  # ── Serverless Function 3: Result Update ───────────────────────────
+  result-update-fn:
+    build: ./functions/result-update
+    ports:
+      - "5012:5012"
+    environment:
+      - DATA_SERVICE_URL=http://data-service:5002
+
+  # ── Database: MongoDB ───────────────────────────────────────────────
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
