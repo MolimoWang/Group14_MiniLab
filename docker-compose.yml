@@ -8,8 +8,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - VUE_APP_WORKFLOW_URL=http://localhost:5001
-      - VUE_APP_DATA_URL=http://localhost:5002
+      # In this way, when users visit through a browser, they can find the backend running on AWS
+      - VUE_APP_WORKFLOW_URL=http://3.131.142.229:5001
+      - VUE_APP_DATA_URL=http://3.131.142.229:5002
     depends_on:
       - workflow-service
       - data-service
