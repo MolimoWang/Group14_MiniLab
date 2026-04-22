@@ -28,10 +28,11 @@ app.post('/submit', async (req, res) => {
         const submissionId = record.data._id;
 
         // Step 2: Trigger Submission Event Function asynchronously (don't wait for response)
-        axios.post(`${SUBMISSION_EVENT_URL}/trigger`, {
-            submissionId,
-            data: submissionData
-        }).catch(err => console.error('[workflow-service] Event trigger failed:', err.message));
+        // 使用展开运算符 (...) 将 submissionData 的字段平铺到最外层
+axios.post(`${SUBMISSION_EVENT_URL}/trigger`, {
+    requestId: submissionId, // 对应 Lambda 里的 requestId
+    ...submissionData        // 展开 title, description, location, date, organiser
+}).catch(err => console.error('[workflow-service] Event trigger failed:', err.message));
 
         // Step 3: Return submission ID immediately
         res.json({ submissionId });
