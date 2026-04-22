@@ -582,7 +582,7 @@ input.error-input, textarea.error-input {
 .status-text {
   font-size: 24px;
   font-weight: 700;
-  color: white;
+  color: rgb(0, 0, 0);
   letter-spacing: 1px;
 }
 
